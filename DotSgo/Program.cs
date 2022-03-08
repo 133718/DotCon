@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using DotBot;
 
 namespace DotSgo
 {
@@ -6,7 +8,8 @@ namespace DotSgo
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Task.Run(() => new SgoBot().RunAsync());
+            Console.ReadLine();
         }
     }
 }

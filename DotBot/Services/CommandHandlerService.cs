@@ -1,10 +1,11 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using DotBot.Modules;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace DotBot
+namespace DotBot.Services
 {
     internal class CommandHandlerService
     {
@@ -21,10 +22,28 @@ namespace DotBot
 
 		public async Task InitializeAsync()
 		{
-			await _commands.AddModulesAsync(
-				assembly: Assembly.GetEntryAssembly(),
-				services: _services);
-			//_client.MessageReceived += HandleCommandAsync;
+            await _commands.AddModuleAsync<StandartModule>(_services);
+			_client.MessageReceived += HandleCommandAsync;
 		}
-	}
+
+        private async Task HandleCommandAsync(SocketMessage messageParam)
+        {
+            var message = messageParam as SocketUserMessage;
+            if (message == null) return;
+
+            int argPos = 0;
+
+            if (!(message.HasCharPrefix('!', ref argPos) ||
+                message.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||
+                message.Author.IsBot)
+                return;
+
+            var context = new SocketCommandContext(_client, message);
+
+            await _commands.ExecuteAsync(
+                context: context,
+                argPos: argPos,
+                services: _services);
+        }
+    }
 }
