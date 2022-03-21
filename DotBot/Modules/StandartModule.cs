@@ -16,7 +16,7 @@ namespace DotBot.Modules
         [Command("dodoco")]
         public Task Dodoco() => ReplyAsync("Dodoco? Dodoco~, where are you~?");
 
-        [Command("exit")]
+        [Command("stop")]
         public async Task Exit()
         {
             await ReplyAsync("Bot stoped");

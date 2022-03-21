@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using DotBot.Services;
+using Serilog.Events;
 
 namespace DotBot
 {
@@ -20,14 +21,6 @@ namespace DotBot
 
         public async Task RunAsync()
         {
-            //Log.Logger = new LoggerConfiguration()
-            //    .MinimumLevel.Debug()
-            //    .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:HH:mm} [{Level}] ({ThreadId}) {Message}{NewLine}{Exception}")
-            //    .WriteTo.Console()
-            //    .CreateLogger();
-
-            
-
             try
             {
                 string jsonString = File.ReadAllText("config.json");
@@ -66,7 +59,6 @@ namespace DotBot
             Log.Information("I stoped!!!");
         }
 
-//TODO: исправить логи
         private IServiceProvider BuildServiceProvider()
         {
             var _clientConfig = new DiscordSocketConfig { MessageCacheSize = 100, LogLevel = LogSeverity.Debug };
@@ -75,16 +67,41 @@ namespace DotBot
             var _commandConfig = new CommandServiceConfig() { LogLevel = LogSeverity.Debug };
             _commands = new CommandService(_commandConfig);
 
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            _client.Log += LogAsync;
+            _commands.Log += LogAsync;
+
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_config)
                 .AddSingleton<StopService>()
-                .AddSingleton(new LogService(_client, _commands))
+                //.AddSingleton(new LogService(_client, _commands))
                 //.AddSingleton(new NotificationService())
                 //.AddSingleton<DatabaseService>()
+                .AddSingleton<SgoConnectionService>()
                 .AddSingleton<CommandHandlerService>()
                 .BuildServiceProvider();
+        }
+
+        private static async Task LogAsync(LogMessage message)
+        {
+            var severity = message.Severity switch
+            {
+                LogSeverity.Critical => LogEventLevel.Fatal,
+                LogSeverity.Error => LogEventLevel.Error,
+                LogSeverity.Warning => LogEventLevel.Warning,
+                LogSeverity.Info => LogEventLevel.Information,
+                LogSeverity.Verbose => LogEventLevel.Verbose,
+                LogSeverity.Debug => LogEventLevel.Debug,
+                _ => LogEventLevel.Information
+            };
+            Log.Write(severity, message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+            await Task.CompletedTask;
         }
     }
 }

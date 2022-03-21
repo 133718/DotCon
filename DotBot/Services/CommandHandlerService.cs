@@ -12,12 +12,14 @@ namespace DotBot.Services
 		private readonly DiscordSocketClient _client;
 		private readonly CommandService _commands;
 		private readonly IServiceProvider _services;
+        private readonly JsonConfig _jsonConfig;
 
-		public CommandHandlerService(IServiceProvider services, CommandService commands, DiscordSocketClient client)
+		public CommandHandlerService(IServiceProvider services, CommandService commands, DiscordSocketClient client, JsonConfig config)
 		{
 			_commands = commands;
 			_services = services;
 			_client = client;
+            _jsonConfig = config;
 		}
 
 		public async Task InitializeAsync()
@@ -37,6 +39,8 @@ namespace DotBot.Services
                 message.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||
                 message.Author.IsBot)
                 return;
+
+            if (message.Author.Id != _jsonConfig.DiscordId) return;
 
             var context = new SocketCommandContext(_client, message);
 
