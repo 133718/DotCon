@@ -1,4 +1,5 @@
-﻿using SgoApi.Models;
+﻿using Serilog;
+using SgoApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace SgoApi.Clients
 {
     public abstract class BaseClient
     {
-        readonly User user;
+        protected readonly User user;
 
         internal BaseClient(User user) => this.user = user;
 
@@ -41,7 +42,7 @@ namespace SgoApi.Clients
                     request
                 );
             }
-
+            Log.Debug("[{Source}] {Message}", "Sgo", $"Send {request.Method} request to {request.RequestUri}");
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 

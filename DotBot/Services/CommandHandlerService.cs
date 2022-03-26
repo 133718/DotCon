@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using DotBot.Modules;
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DotBot.Services
@@ -25,6 +24,7 @@ namespace DotBot.Services
 		public async Task InitializeAsync()
 		{
             await _commands.AddModuleAsync<StandartModule>(_services);
+            await _commands.AddModuleAsync<DiaryModule>(_services);
 			_client.MessageReceived += HandleCommandAsync;
 		}
 

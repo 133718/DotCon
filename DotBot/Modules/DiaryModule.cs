@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using DotBot.Services;
+using SgoApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +11,17 @@ namespace DotBot.Modules
 {
     internal class DiaryModule : ModuleBase<SocketCommandContext>
     {
-        private SgoConnectionService _connection;
+        SgoClient _client;
 
-        public DiaryModule(SgoConnectionService service)
+        public DiaryModule(SgoClient sgoClient)
         {
-            _connection = service;
+            _client = sgoClient;
         }
 
+        [Command("diary")]
         public async Task Diary()
         {
-            //var day = await _connection.GetDay(DateTime.Now);
-            await Context.Channel.SendMessageAsync();
+            await _client.Diary.GetDays(DateTime.Now, DateTime.Now);
         }
     }
 }

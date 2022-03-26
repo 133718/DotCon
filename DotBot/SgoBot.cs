@@ -9,6 +9,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using DotBot.Services;
 using Serilog.Events;
+using SgoApi;
 
 namespace DotBot
 {
@@ -18,9 +19,16 @@ namespace DotBot
         private CommandService _commands;
         private IServiceProvider _services;
         private JsonConfig _config;
+        private SgoClient _sgoClient;
 
-        public async Task RunAsync()
+        public async Task<BotResult> RunAsync()
         {
+            
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
             try
             {
                 string jsonString = File.ReadAllText("config.json");
@@ -30,33 +38,43 @@ namespace DotBot
             catch (FileNotFoundException ex)
             {
                 Console.WriteLine(ex + "\n Config not found");
-                return;
+                return BotResult.Error(ex, "Config not found");
             }
             catch (JsonException ex)
             {
                 Console.WriteLine(ex.Message);
-                return;
+                return BotResult.Error(ex, "Parse error");
             }
+
+            _sgoClient = new SgoClient(_config.Username, _config.Password);
+            if (!(await _sgoClient.Connection.ConnectAsync()).IsSuccess)
+                return BotResult.Error("Sgo connection Error");
 
             _services = BuildServiceProvider();
 
             await _services.GetRequiredService<CommandHandlerService>().InitializeAsync();
 
-            _client.Ready += () =>
-            {
-                Log.Information("Client ready");
-                return Task.CompletedTask;
-            };
-
-            Log.Information("Conecting...");
+            Log.Information("[{Source}] {Message}", "Bot", "Conecting...");
 
             await _client.LoginAsync(TokenType.Bot, _config.Token);
             await _client.StartAsync();
 
-            var token = _services.GetRequiredService<StopService>().GetToken();
-            await Task.Delay(-1, token);
+            return BotResult.Success("Run succsefull");
 
-            Log.Information("I stoped!!!");
+            
+        }
+
+        public async Task<BotResult> StopAsync()
+        {
+            await _sgoClient.Connection.DisconnectAsync();
+            await _client.StopAsync();
+
+            Log.Information("[{Source}] {Message}", "Bot", "Bot stoped");
+
+            _client.Dispose();
+            _sgoClient.Dispose();
+
+            return BotResult.Success("Stoped");
         }
 
         private IServiceProvider BuildServiceProvider()
@@ -67,23 +85,23 @@ namespace DotBot
             var _commandConfig = new CommandServiceConfig() { LogLevel = LogSeverity.Debug };
             _commands = new CommandService(_commandConfig);
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
-
             _client.Log += LogAsync;
             _commands.Log += LogAsync;
+
+            _client.Ready += () =>
+            {
+                Log.Information("[{Source}] {Message}", "Bot", "Client ready");
+                return Task.CompletedTask;
+            };
 
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_config)
-                .AddSingleton<StopService>()
                 //.AddSingleton(new LogService(_client, _commands))
                 //.AddSingleton(new NotificationService())
                 //.AddSingleton<DatabaseService>()
-                .AddSingleton<SgoConnectionService>()
+                .AddSingleton(_sgoClient)
                 .AddSingleton<CommandHandlerService>()
                 .BuildServiceProvider();
         }

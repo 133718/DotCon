@@ -5,30 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using SgoApi.Clients;
 using SgoApi.Models;
-using SgoApi.Results;
+using Serilog;
 
 namespace SgoApi
 {
     public class SgoClient : IDisposable
     {
         readonly User user;
-        readonly ConnectionClient connection;
+        public ConnectionClient Connection { get; }
+        public DiaryClient Diary { get; }
         private bool disposedValue;
 
         public SgoClient(string login, string password)
         {
             user = new User(login, password);
-            connection = new ConnectionClient(user);
-        }
-
-        public async Task<RuntimeResult> ConnectAsync()
-        {
-            return await connection.ConnectAsync();
-        }
-
-        public async Task<RuntimeResult> DisconnectAsync()
-        {
-            return await connection.DisconnectAsync();
+            Connection = new ConnectionClient(user);
+            Diary = new DiaryClient(user);
+            Log.Debug("[{Source}] {Message}", "Sgo", "SgoClient created");
         }
 
         protected virtual void Dispose(bool disposing)
@@ -38,8 +31,9 @@ namespace SgoApi
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects)
-                    _ = connection.DisconnectAsync();
+                    _ = Connection.DisconnectAsync();
                     user.Dispose();
+                    Log.Debug("[{Source}] {Message}", "Sgo", "SgoClient disposed");
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

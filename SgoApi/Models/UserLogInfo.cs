@@ -1,28 +1,53 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿// Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
+using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace SgoApi.Models
 {
-    internal class UserLogInfo
+    public class SgoUser
     {
-        [JsonProperty("at")]
-        public string authToken;
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
 
-        public string name;
-        public string id;
-
-        [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData = new Dictionary<string, JToken>();
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            var AccountInfo = _additionalData["accountInfo"]["user"];
-
-            name = AccountInfo["name"].ToString();
-            id = AccountInfo["id"].ToString();
-        }
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
     }
+
+    public class Organization
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
+
+    public class AccountInfo
+    {
+        [JsonPropertyName("currentOrganization")]
+        public Organization CurrentOrganization { get; set; }
+
+        [JsonPropertyName("user")]
+        public SgoUser User { get; set; }
+
+        [JsonPropertyName("userRoles")]
+        public List<object> UserRoles { get; set; }
+
+        [JsonPropertyName("organizations")]
+        public List<Organization> Organizations { get; set; }
+
+        [JsonPropertyName("loginTime")]
+        public DateTime LoginTime { get; set; }
+    }
+
+    public class UserLogInfo
+    {
+        [JsonPropertyName("at")]
+        public string AuthToken { get; set; }
+
+        [JsonPropertyName("accountInfo")]
+        public AccountInfo AccountInfo { get; set; }
+    }
+
 }

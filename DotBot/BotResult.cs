@@ -13,8 +13,9 @@ namespace DotBot
         public Exception Exception { get; private set; }
         public string Reason { get; private set; }
 
-        public static BotResult Success(string reason = "") => new BotResult() { Reason = reason };
-        public static BotResult Error(Exception ex, string reason) => new BotResult() { Reason = reason, Exception = ex};
+        public static BotResult Success(string reason = "") => new() { Reason = reason };
+        public static BotResult Error(Exception ex, string reason) => new() { Reason = reason, Exception = ex};
+        public static BotResult Error(string reason) => new() { Reason = reason };
 
         public bool IsSuccess => Exception == null;
 

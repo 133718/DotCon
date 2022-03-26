@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DotBot;
-using SgoApi;
+using Serilog;
 
 namespace DotSgo
 {
-    internal class Program
+    class Program
     {
-        static async Task Main(string[] args)
+        static SgoBot bot;
+
+        static void Main(string[] args)
         {
-            //Task.Run(() => new SgoBot().RunAsync());
-            //Console.ReadLine();
-            var client = new SgoClient("Проходский", "testtest");
-            try
+            bot = new SgoBot();
+
+            var result = bot.RunAsync().Result;
+            Log.Information(result.ToString());
+
+            if (!result.IsSuccess)
+                return;
+
+            while (Console.ReadLine() != "exit") 
             {
-                await client.ConnectAsync();
+                Log.Information("lol");
             }
-            finally
-            {
-                await client.DisconnectAsync();
-                client.Dispose();
-            }
+            Log.Information(bot.StopAsync().Result.ToString());
+
+            //var client = new SgoClient("Проходский", "testtest");
         }
     }
 }

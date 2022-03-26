@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
 
 namespace SgoApi.Models
 {
-    internal class User : IDisposable
+    public class User : IDisposable
     {
         public string Username { get; }
         public string Password { get; }
@@ -36,7 +36,7 @@ namespace SgoApi.Models
 
         public bool IsConected => Conected && connectedTime.AddHours(1) > DateTime.Now;
 
-        public User(string username, string password, LoginForm loginForm = null)
+        internal User(string username, string password, LoginForm loginForm = null)
         {
             Username = username ?? throw new ArgumentNullException(nameof(username));
             Password = password ?? throw new ArgumentNullException(nameof(password));
@@ -54,7 +54,7 @@ namespace SgoApi.Models
                 form["sft"] = loginForm.sft;
                 form["scid"] = loginForm.schoolId;
             }
-                
+            Log.Debug("[{Source}] {Message}", "Sgo", $"User {username} have created");
         }
 
         public void Dispose()
@@ -69,23 +69,10 @@ namespace SgoApi.Models
             Conected = true;
         }
 
-        static string GetHash(string input)
-        {
-            byte[] hash = System.Text.Encoding.ASCII.GetBytes(input);
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] hashenc = md5.ComputeHash(hash);
-            string result = "";
-            foreach (var b in hashenc)
-            {
-                result += b.ToString("x2");
-            }
-            return result;
-        }
-
         public HttpContent ToContent(Dictionary<string, string> data)
         {
             form["UN"] = Username;
-            form["pw2"] = GetHash(data["salt"] + GetHash(Password));
+            form["pw2"] = Helper.GetHash(data["salt"] + Helper.GetHash(Password));
             form["PW"] = form["pw2"][Password.Length..];
             form["lt"] = data["lt"];
             form["ver"] = data["ver"];
