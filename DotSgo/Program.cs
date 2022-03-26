@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using DotBot;
 using Serilog;
 
@@ -19,13 +18,11 @@ namespace DotSgo
             if (!result.IsSuccess)
                 return;
 
-            while (Console.ReadLine() != "exit") 
+            while (Console.ReadLine() != "exit")
             {
                 Log.Information("lol");
             }
             Log.Information(bot.StopAsync().Result.ToString());
-
-            //var client = new SgoClient("Проходский", "testtest");
         }
     }
 }

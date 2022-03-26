@@ -21,7 +21,8 @@ namespace DotBot.Modules
         [Command("diary")]
         public async Task Diary()
         {
-            await _client.Diary.GetDays(DateTime.Now, DateTime.Now);
+            var days = await _client.Diary.GetDays(DateTime.Now, DateTime.Now);
+            Console.WriteLine(days);
         }
     }
-}
+} 

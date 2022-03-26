@@ -4,18 +4,21 @@ using System.Text.Json.Serialization;
 
 namespace SgoApi.Diary
 {
-    public class Day
+    public class Day : IJsonOnDeserialized
     {
-        public DateTime Date { get; }
-        public List<object> Lessons { get; }
+        [JsonInclude]
+        [JsonPropertyName("date")]
+        public DateTime Date { get; private set; }
+        [JsonInclude]
+        [JsonPropertyName("lessons")]
+        public List<Lesson> Lessons { get; private set; }
 
         public int Count => Lessons.Count;
 
-        [JsonConstructor]
-        internal Day(DateTime date, List<object> lessons)
+        void IJsonOnDeserialized.OnDeserialized()
         {
-            Date = date;
-            Lessons = lessons ?? new List<object>();
+            if (Lessons == null)
+                Lessons = new List<Lesson>();
         }
     }
 }

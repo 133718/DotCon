@@ -1,9 +1,10 @@
-﻿using SgoApi.Models;
+﻿using SgoApi.Diary;
+using SgoApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SgoApi.Clients
@@ -12,17 +13,16 @@ namespace SgoApi.Clients
     {
         internal DiaryClient(User user) : base(user) { }
 
-        public Task GetDays(DateTime startDate, DateTime endDate) 
+        public async Task<DayCollection> GetDays(DateTime startDate, DateTime endDate) 
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post,
+            using var request = new HttpRequestMessage(HttpMethod.Get,
                 "webapi/student/diary?" +
                 $"studentId={user.LogInfo.AccountInfo.User.Id}&" +
                 $"weekEnd={endDate.ToString("yyyy-MM-dd")}&" +
                 $"weekStart={startDate.ToString("yyyy-MM-dd")}&" +
                 "yearId=197819");
             request.Headers.Add("at", user.LogInfo.AuthToken);
-
-            return Task.CompletedTask;
+            return JsonSerializer.Deserialize<DayCollection>(await SendHttpRequestAsync(request));
         }
     }
 }

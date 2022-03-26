@@ -4,20 +4,24 @@ using System.Text.Json.Serialization;
 
 namespace SgoApi.Diary
 {
-    public class DayCollection
+    public class DayCollection : IJsonOnDeserialized
     {
-        public DateTime StartDate { get; }
-        public DateTime EndDate { get; }
-        public List<Day> Days { get; }
+        [JsonInclude]
+        [JsonPropertyName("weekStart")]
+        public DateTime StartDate { get; private set; }
+        [JsonInclude]
+        [JsonPropertyName("weekEnd")]
+        public DateTime EndDate { get; private set; }
+        [JsonInclude]
+        [JsonPropertyName("weekDays")]
+        public List<Day> Days { get; private set; }
 
         public int Count => Days.Count;
 
-        [JsonConstructor]
-        internal DayCollection(DateTime weekStart, DateTime weekEnd, List<Day> weekDays)
+        void IJsonOnDeserialized.OnDeserialized()
         {
-            StartDate = weekStart;
-            EndDate = weekEnd;
-            Days = weekDays ?? new List<Day>();
+            if(Days == null)
+                Days = new List<Day>();
         }
     }
 }
