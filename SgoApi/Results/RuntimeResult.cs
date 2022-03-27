@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SgoApi.Results
 {
@@ -28,19 +24,19 @@ namespace SgoApi.Results
         private string DebuggerDisplay => IsSuccess ? $"Success: {Reason ?? "No Reason"}" : $"{Error}: {Reason}";
 
         public static RuntimeResult FromSuccess()
-            => new RuntimeResult(null, null);
+            => new(null, null);
         
         public static RuntimeResult FromSuccess(string reason)
-            => new RuntimeResult(null, reason);
+            => new(null, reason);
 
         public static RuntimeResult FromError(string reason)
-            => new RuntimeResult(null, reason);
+            => new(null, reason);
 
         public static RuntimeResult FromError(Exception ex)
-            => new RuntimeResult(ex,  ex.Message);
+            => new(ex,  ex.Message);
 
         public static RuntimeResult FromError(IResult result)
-            => new RuntimeResult(result.Error, result.ErrorReason);
+            => new(result.Error, result.ErrorReason);
 
     }
 }

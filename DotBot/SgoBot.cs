@@ -4,12 +4,13 @@ using Discord.Commands;
 using System.Threading.Tasks;
 using System.IO;
 using Serilog;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using DotBot.Services;
 using Serilog.Events;
 using SgoApi;
+using DotBot.Models;
 
 namespace DotBot
 {
@@ -33,7 +34,7 @@ namespace DotBot
             {
                 string jsonString = File.ReadAllText("config.json");
 
-                _config = JsonConvert.DeserializeObject<JsonConfig>(jsonString);
+                _config = JsonSerializer.Deserialize<JsonConfig>(jsonString);
             }
             catch (FileNotFoundException ex)
             {
@@ -98,7 +99,6 @@ namespace DotBot
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_config)
-                //.AddSingleton(new LogService(_client, _commands))
                 //.AddSingleton(new NotificationService())
                 //.AddSingleton<DatabaseService>()
                 .AddSingleton(_sgoClient)

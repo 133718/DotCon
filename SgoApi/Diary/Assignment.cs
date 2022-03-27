@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace SgoApi.Diary
 {
@@ -18,7 +15,7 @@ namespace SgoApi.Diary
         public int TypeId { get; private set; }
         [JsonInclude]
         [JsonPropertyName("assignmentName")]
-        public string FirstDescription { get; private set; }
+        public string Description { get; private set; }
         [JsonInclude]
         [JsonPropertyName("dueDate")]
         public DateTime Date { get; private set; }

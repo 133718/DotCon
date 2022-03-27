@@ -1,10 +1,7 @@
 ﻿using Serilog;
 using SgoApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,8 +22,7 @@ namespace SgoApi.Clients
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
                 );
             }
-
-            using var response = await user.Client.SendAsync(
+            using HttpResponseMessage response = await user.Client.SendAsync(
                 request,
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken
@@ -43,6 +39,7 @@ namespace SgoApi.Clients
                 );
             }
             Log.Debug("[{Source}] {Message}", "Sgo", $"Send {request.Method} request to {request.RequestUri}");
+            user.Update();
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 

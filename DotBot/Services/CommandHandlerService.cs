@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using DotBot.Models;
 using DotBot.Modules;
 using System;
 using System.Threading.Tasks;
@@ -30,8 +31,7 @@ namespace DotBot.Services
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
+            if (messageParam is not SocketUserMessage message) return;
 
             int argPos = 0;
 

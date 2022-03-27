@@ -30,6 +30,18 @@ namespace SgoApi.Diary
         
         public int Count => Assignments.Count;
 
+        public Assignment this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= Assignments.Count)
+                    throw new IndexOutOfRangeException();
+                return Assignments[index];
+            }
+        }
+
+        public Assignment GetAssignment(int num) => Assignments.Find(assignment => assignment.TypeId == num);
+
         void IJsonOnDeserialized.OnDeserialized()
         {
             if(Assignments == null)

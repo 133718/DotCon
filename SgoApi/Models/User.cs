@@ -69,6 +69,11 @@ namespace SgoApi.Models
             Conected = true;
         }
 
+        public void Update()
+        {
+            connectedTime = DateTime.Now;
+        }
+
         public HttpContent ToContent(Dictionary<string, string> data)
         {
             form["UN"] = Username;

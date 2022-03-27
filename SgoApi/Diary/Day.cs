@@ -15,6 +15,18 @@ namespace SgoApi.Diary
 
         public int Count => Lessons.Count;
 
+        public Lesson this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= Lessons.Count)
+                    throw new IndexOutOfRangeException();
+                return Lessons[index];
+            }
+        }
+
+        public Lesson GetLesson(int number) => Lessons.Find(lesson => lesson.Number == number);
+
         void IJsonOnDeserialized.OnDeserialized()
         {
             if (Lessons == null)

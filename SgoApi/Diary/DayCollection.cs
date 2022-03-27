@@ -18,6 +18,16 @@ namespace SgoApi.Diary
 
         public int Count => Days.Count;
 
+        public Day this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= Days.Count)
+                    throw new IndexOutOfRangeException();
+                return Days[index];
+            }
+        }
+
         void IJsonOnDeserialized.OnDeserialized()
         {
             if(Days == null)
