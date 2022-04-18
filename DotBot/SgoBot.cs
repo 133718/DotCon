@@ -22,14 +22,11 @@ namespace DotBot
         private JsonConfig _config;
         private SgoClient _sgoClient;
 
-        public async Task<BotResult> RunAsync()
-        {
-            
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
+        public bool Connected { get; private set; }
 
+        public async Task RunAsync()
+        {
+            Connected = true;
             try
             {
                 string jsonString = File.ReadAllText("config.json");
@@ -38,44 +35,42 @@ namespace DotBot
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine(ex + "\n Config not found");
-                return BotResult.Error(ex, "Config not found");
+                throw new Exception("Config not found", ex);
             }
             catch (JsonException ex)
             {
-                Console.WriteLine(ex.Message);
-                return BotResult.Error(ex, "Parse error");
+                throw new JsonException("Config parse error", ex);
             }
 
             _sgoClient = new SgoClient(_config.Username, _config.Password);
-            if (!(await _sgoClient.Connection.ConnectAsync()).IsSuccess)
-                return BotResult.Error("Sgo connection Error");
+            await _sgoClient.Connection.ConnectAsync();
 
             _services = BuildServiceProvider();
 
             await _services.GetRequiredService<CommandHandlerService>().InitializeAsync();
+            await _services.GetRequiredService<ServerNormolizeService>().InitializeAsync();
 
             Log.Information("[{Source}] {Message}", "Bot", "Conecting...");
 
             await _client.LoginAsync(TokenType.Bot, _config.Token);
             await _client.StartAsync();
-
-            return BotResult.Success("Run succsefull");
-
-            
         }
 
-        public async Task<BotResult> StopAsync()
+        public async Task StopAsync()
         {
-            await _sgoClient.Connection.DisconnectAsync();
-            await _client.StopAsync();
+            if (Connected)
+            {
+                Connected = false;
+                _services.GetRequiredService<CommandHandlerService>().Stop();
 
-            Log.Information("[{Source}] {Message}", "Bot", "Bot stoped");
+                await _sgoClient.Connection.DisconnectAsync();
+                await _client.StopAsync();
 
-            _client.Dispose();
-            _sgoClient.Dispose();
+                Log.Information("[{Source}] {Message}", "Bot", "Bot stoped");
 
-            return BotResult.Success("Stoped");
+                _client.Dispose();
+                _sgoClient.Dispose();
+            }
         }
 
         private IServiceProvider BuildServiceProvider()
@@ -101,6 +96,8 @@ namespace DotBot
                 .AddSingleton(_config)
                 //.AddSingleton(new NotificationService())
                 //.AddSingleton<DatabaseService>()
+                .AddSingleton<ServerNormolizeService>()
+                .AddSingleton<DotUser>()
                 .AddSingleton(_sgoClient)
                 .AddSingleton<CommandHandlerService>()
                 .BuildServiceProvider();

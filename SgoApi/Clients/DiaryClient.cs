@@ -24,5 +24,12 @@ namespace SgoApi.Clients
         }
 
         public async Task<DayCollection> GetDay(DateTime date) => await GetDays(date, date);
+
+        public async Task<FullAssignment> GetAssignmentAsync(int id) 
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"webapi/student/diary/assigns/{id}?studentId={user.LogInfo.AccountInfo.User.Id}");
+            request.Headers.Add("at", user.LogInfo.AuthToken);
+            return JsonSerializer.Deserialize<FullAssignment>(await SendHttpRequestAsync(request));
+        }
     }
 }

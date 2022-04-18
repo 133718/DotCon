@@ -25,6 +25,7 @@ namespace SgoApi.Diary
 
         void IJsonOnDeserialized.OnDeserialized()
         {
+            Description = Description.Trim();
             if (!ExtensionData.ContainsKey("mark"))
                 return;
             var mark = ExtensionData["mark"];

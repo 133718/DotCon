@@ -1,5 +1,4 @@
 ﻿using SgoApi.Models;
-using SgoApi.Results;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -21,7 +20,7 @@ namespace SgoApi.Clients
             return JsonSerializer.Deserialize<Dictionary<string, string>>(response);
         }
 
-        public async Task<RuntimeResult> ConnectAsync() 
+        public async Task ConnectAsync() 
         {
             Log.Debug("[{Source}] {Message}", "Sgo", "Start connecting to Sgo");
             try
@@ -34,29 +33,22 @@ namespace SgoApi.Clients
                 var logInfo = JsonSerializer.Deserialize<UserLogInfo>(response);
                 user.Connected(logInfo);
                 Log.Debug("[{Source}] {Message}", "Sgo", "Connect Successful");
-                return RuntimeResult.FromSuccess();
             }
             catch (HttpRequestException ex)
             {
-#if DEBUG
-                Console.WriteLine(ex.Message);
-#endif
-                return RuntimeResult.FromError(ex);
+                throw new HttpRequestException("Login error", ex);
             }
             catch(JsonException ex)
             {
-#if DEBUG
-                Console.WriteLine(ex.Message);
-#endif
-                return RuntimeResult.FromError(ex);
+                throw new HttpRequestException("Request parse error", ex);
             }
         }
 
-        public async Task<RuntimeResult> DisconnectAsync()
+        public async Task DisconnectAsync()
         {
             Log.Debug("[{Source}] {Message}", "Sgo", "Starting Disconnect");
             if (!user.IsConected)
-                    return RuntimeResult.FromSuccess();
+                    return;
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, "asp/logout.asp");
@@ -65,10 +57,13 @@ namespace SgoApi.Clients
             }
             catch(HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Found)
             {
-                return RuntimeResult.FromSuccess();
+                
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("LogOut error", ex);
             }
             Log.Debug("[{Source}] {Message}", "Sgo", "Disconnect Successful");
-            return RuntimeResult.FromSuccess();
         }
     }
 
